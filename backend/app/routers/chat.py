@@ -217,7 +217,20 @@ async def room_socket(ws: WebSocket, room: str):
             if not isinstance(data, dict):
                 continue
             if data.get("type") == "message":
-                await handle_send(ws, user.id, info, str(data.get("body", "")))
+                try:
+                    print("CHAT SEND RECEIVED:", room, flush=True)
+                    await handle_send(ws, user.id, info, str(data.get("body", "")))
+                    print("CHAT SEND COMPLETED:", room, flush=True)
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    try:
+                        await ws.send_json({
+                            "type": "error",
+                            "detail": f"Message failed: {type(e).__name__}: {e}"
+        })
+                    except Exception:
+                            pass
             elif data.get("type") == "typing" and not limiter.hit(f"typing:{user.id}:{room}", 1, 2):
                 who = anon_alias(user.id, datetime.now(timezone.utc)) if info.anonymous else user.name
                 uid = user.id
