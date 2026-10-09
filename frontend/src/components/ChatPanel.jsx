@@ -9,7 +9,7 @@ import Avatar from './Avatar.jsx'
 const STATUS = { live: 'Live', connecting: 'Connecting…', reconnecting: 'Reconnecting…', denied: 'No access' }
 
 export default function ChatPanel({ room, title, subtitle, emptyText = 'No messages yet. Say hello.', headerExtra, placeholder }) {
-  const { messages, meta, status, online, notice, setNotice, hasMore, send, sendTyping, typing, setTyping, loadOlder, markHidden } = useRoom(room)
+  const { messages, meta, status, online, notice, setNotice, hasMore, send, sendTyping, typing, setTyping, loadOlder, markHidden, failed } = useRoom(room)
   const { setViewing, refresh } = useNotify()
   const lastRead = useRef(0)
   const [draft, setDraft] = useState('')
@@ -22,6 +22,7 @@ export default function ChatPanel({ room, title, subtitle, emptyText = 'No messa
   const slow = meta?.slowmode_seconds || 0
 
   useEffect(() => { setDraft(''); setCooldownUntil(0); stick.current = true; lastRead.current = 0 }, [room])
+  useEffect(() => { if (failed) setDraft((d) => d || failed.body) }, [failed]) // give back unsent text
 
   // Tell the notifier this room is on screen, and mark DMs / ride chats read as messages arrive.
   const tracksUnread = room?.startsWith('dm:') || room?.startsWith('carpool:')

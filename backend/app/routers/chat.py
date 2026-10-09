@@ -216,7 +216,9 @@ async def room_socket(ws: WebSocket, room: str):
             data = await ws.receive_json()
             if not isinstance(data, dict):
                 continue
-            if data.get("type") == "message":
+            if data.get("type") == "ping":  # client heartbeat; lets the browser spot dead sockets
+                await ws.send_json({"type": "pong"})
+            elif data.get("type") == "message":
                 await handle_send(ws, user.id, info, str(data.get("body", "")))
             elif data.get("type") == "typing" and not limiter.hit(f"typing:{user.id}:{room}", 1, 2):
                 who = anon_alias(user.id, datetime.now(timezone.utc)) if info.anonymous else user.name
