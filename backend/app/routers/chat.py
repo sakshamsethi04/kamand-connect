@@ -214,6 +214,7 @@ async def room_socket(ws: WebSocket, room: str):
     try:
         while True:
             data = await ws.receive_json()
+            print("WEBSOCKET DATA RECEIVED:", repr(data), flush=True)
             if not isinstance(data, dict):
                 continue
             if data.get("type") == "message":
